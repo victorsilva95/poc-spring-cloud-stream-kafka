@@ -1,0 +1,33 @@
+version: '2.4'
+services:
+
+  zookeeper:
+    image: debezium/zookeeper
+    container_name: profile-zkp
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: debezium/kafka
+    container_name: profile-kafka
+    environment:
+      ZOOKEEPER_CONNECT: zookeeper:2181
+    ports:
+      - "9092:9092"
+    depends_on:
+      zookeeper:
+        condition: service_started
+
+  mysql:
+    image: mysql:5.6.37
+    container_name: profile-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: "profile"
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
